@@ -1,14 +1,25 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse
+from django import forms
+from .models import User, Listing
+from django.contrib.auth.decorators import login_required
 
-from .models import User
+
+class CreateListingForm(forms.ModelForm):
+    class Meta:
+        model = Listing
+        fields = ["title", "description", "starting_bid", "image_url", "category"]
 
 
-def index(request):
-    return render(request, "auctions/index.html")
+def index(request):    
+    if not request.user.is_authenticated:
+        return redirect(reverse("login"))     
+    
+    active_listings = Listing.objects.filter(active=True)
+    return render(request, "auctions/index.html", {"active_listings": active_listings})
 
 
 def login_view(request):
@@ -61,3 +72,17 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "auctions/register.html")
+
+
+@login_required
+def create_listing(request):
+  if request.method == "POST":
+    form = CreateListingForm(request.POST)
+    if form.is_valid():
+      form.save(commit=False)  # Don't commit yet, set creator field
+      form.instance.creator = request.user  # Set creator to current user
+      form.save()
+      return HttpResponseRedirect(reverse("index"))
+  else:
+    form = CreateListingForm()
+  return render(request, "auctions/create_listing.html", {"form": form})
