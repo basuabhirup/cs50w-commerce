@@ -1,7 +1,27 @@
 {% extends "auctions/layout.html" %}
 
-{% block body %}
-    <h2>Active Listings</h2>
+{% block title %}
+  Auctions
+{% endblock %}
 
-    TODO
+{% block body %}
+  <h1>Active Listings</h1>
+  {% if active_listings %}
+    <ul>
+      {% for listing in active_listings %}
+        <li>
+          <a href="">
+            {{ listing.title }}
+          </a>
+          <br>
+          Starting Bid: ${{ listing.starting_bid }}
+          {% if listing.image_url %}
+            <img src="{{ listing.image_url }}" alt="{{ listing.title }}" width="100">
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No active listings found.</p>
+  {% endif %}
 {% endblock %}
