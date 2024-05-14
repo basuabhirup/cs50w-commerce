@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django import forms
-from .models import User, Listing, Bid
+from .models import User, Listing, Bid, Comment
 from django.contrib.auth.decorators import login_required
 
 
@@ -12,7 +12,7 @@ class CreateListingForm(forms.ModelForm):
     class Meta:
         model = Listing
         fields = ["title", "description", "starting_bid", "image_url", "category"]
-
+        
 
 def index(request):    
     active_listings = Listing.objects.filter(active=True)
@@ -86,12 +86,10 @@ def create_listing(request):
 
 
 def listing(request, listing_id):
-    print(request.user)
-    print(listing_id)
     listing = get_object_or_404(Listing, pk=listing_id)
     current_bid = listing.bids.order_by('-amount').first()
     is_on_watchlist = request.user.is_authenticated and listing.watchers.filter(username=request.user).exists()
-    comments = [] #listing.comments.all().order_by('-created_at')
+    comments = listing.comments.all().order_by('-created_at')
 
     if request.method == 'POST' and request.user.is_authenticated:
         if 'add_to_watchlist' in request.POST:
@@ -129,6 +127,25 @@ def listing(request, listing_id):
             listing.save()
             return redirect('listing', listing_id=listing.id)
 
+        if "comment" in request.POST:
+            comment_text = request.POST["comment"]
+            if comment_text.strip():
+                print(comment_text)
+                Comment.objects.create(
+                    listing=listing,
+                    user=request.user,
+                    content=comment_text,
+                )
+                return redirect("listing", listing_id=listing.id)
+            else:
+                return render(request, 'auctions/listing.html', {
+                    'listing': listing,
+                    'current_bid': current_bid,
+                    'is_on_watchlist': is_on_watchlist,
+                    'comments': comments,
+                    'error_message': 'Invalid comment.',
+                })
+            
 
     return render(request, 'auctions/listing.html', {
         'listing': listing,

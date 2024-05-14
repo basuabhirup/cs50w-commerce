@@ -63,18 +63,25 @@
     </form>
   {% endif %}
 
-  {% if listing.winner %}
+  {% if not listing.active and listing.winner %}
     <p>Auction Closed! Winner: {{ listing.winner.username }}</p>
-  {% else %}
+  {% elif not listing.active %}
     <p>Auction Closed. No winner.</p>
   {% endif %}
 
   <h2>Comments</h2>
-  <ul>
-    {% for comment in comments %}
-      <li>{{ comment.user.username }}: {{ comment.content }}</li>
-    {% endfor %}
-  </ul>
+    {% if comments %}
+        <ul>
+            {% for comment in comments %}
+                <li>
+                    <strong>{{ comment.user.username }}</strong> ({{ comment.created_at|timesince }} ago)<br>
+                        {{ comment.content }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No comments yet.</p>
+    {% endif %}
 
 {% endblock %}
 
