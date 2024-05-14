@@ -101,7 +101,7 @@ def listing(request, listing_id):
         elif 'remove_from_watchlist' in request.POST:
             listing.watchers.remove(request.user)
             listing.save()
-            return redirect('listing', listing_id=listing.id)        
+            return redirect('listing', listing_id=listing.id)
         
         if 'bid' in request.POST:
             new_bid = float(request.POST['bid'])
@@ -119,6 +119,16 @@ def listing(request, listing_id):
                     'comments': comments,
                     'error_message': 'Invalid bid or bid amount is too low.',
                 })
+
+        if 'close_auction' in request.POST and listing.creator == request.user and listing.active:
+            listing.active = False
+            if current_bid:
+                listing.winner = current_bid.user
+            else:
+                listing.winner = None
+            listing.save()
+            return redirect('listing', listing_id=listing.id)
+
 
     return render(request, 'auctions/listing.html', {
         'listing': listing,
