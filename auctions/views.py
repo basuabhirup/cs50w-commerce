@@ -15,9 +15,6 @@ class CreateListingForm(forms.ModelForm):
 
 
 def index(request):    
-    if not request.user.is_authenticated:
-        return redirect(reverse("login"))     
-    
     active_listings = Listing.objects.filter(active=True)
     return render(request, "auctions/index.html", {"active_listings": active_listings})
 
