@@ -1,0 +1,69 @@
+{% extends "auctions/layout.html" %}
+
+{% block title %}
+  {{ listing.title }}
+{% endblock %}
+
+
+{% block body %}
+  <h1>{{ listing.title }}</h1>
+  {% if listing.image_url %}
+    <img src="{{ listing.image_url }}" alt="{{ listing.title }}" height="268">
+  {% endif %}
+  <p>{{ listing.description }}</p>
+  <p>Starting bid: ${{ listing.starting_bid }}</p>
+  <p>Current price: ${{ listing.current_price }}</p>
+
+  {% if request.user.is_authenticated %}
+    <form method="POST">
+      {% csrf_token %}
+      <label for="bid">Place your bid:</label>
+      <input type="number" id="bid" name="bid" min="{{ listing.starting_bid }}" step="0.01" required>
+      <button type="submit">Place Bid</button>
+    </form>
+
+    {% if is_on_watchlist %}
+      <form method="POST">
+        {% csrf_token %}
+        <button type="submit" name="remove_from_watchlist">Remove from Watchlist</button>
+      </form>
+    {% else %}
+      <form method="POST">
+        {% csrf_token %}
+        <button type="submit" name="add_to_watchlist">Add to Watchlist</button>
+      </form>
+    {% endif %}
+
+    {% if listing.creator == request.user and listing.active %}
+        <form method="POST">
+        {% csrf_token %}
+        <button type="submit" name="close_auction">Close Auction</button>
+        </form>
+    {% endif %}
+
+    {% if not listing.active %}
+        {% if listing.winner %}
+        <p>Auction Closed! Winner: {{ listing.winner.username }}</p>
+        {% else %}
+        <p>Auction Closed. No winner.</p>
+        {% endif %}
+    {% endif %}
+
+    <h2>Add a comment</h2>
+    <form method="POST">
+      {% csrf_token %}
+      <label for="comment">Comment:</label>
+      <textarea id="comment" name="comment" required></textarea>
+      <button type="submit">Post Comment</button>
+    </form>
+  {% endif %}
+
+  <h2>Comments</h2>
+  <ul>
+    {% for comment in comments %}
+      <li>{{ comment.user.username }}: {{ comment.content }}</li>
+    {% endfor %}
+  </ul>
+
+{% endblock %}
+

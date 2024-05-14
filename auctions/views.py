@@ -1,10 +1,10 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, redirect
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django import forms
-from .models import User, Listing
+from .models import User, Listing, Bid
 from django.contrib.auth.decorators import login_required
 
 
@@ -83,3 +83,21 @@ def create_listing(request):
   else:
     form = CreateListingForm()
   return render(request, "auctions/create_listing.html", {"form": form})
+
+
+def listing(request, listing_id):
+    print(request.user)
+    print(listing_id)
+    listing = get_object_or_404(Listing, pk=listing_id)
+    current_bid = listing.bids.order_by('-amount').first()
+    is_on_watchlist = False #request.user.is_authenticated and listing.watchers.filter(user=request.user).exists()
+    comments = [] #listing.comments.all().order_by('-created_at')
+
+    # ... rest of the view logic (bidding, closing, etc.)
+
+    return render(request, 'auctions/listing.html', {
+        'listing': listing,
+        'current_bid': current_bid,
+        'is_on_watchlist': is_on_watchlist,
+        'comments': comments,
+    })

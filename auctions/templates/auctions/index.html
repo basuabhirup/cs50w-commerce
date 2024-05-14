@@ -10,7 +10,7 @@
     <ul>
       {% for listing in active_listings %}
         <li>
-          <a href="">
+          <a href="{% url 'listing' listing.id %}">
             {{ listing.title }}
           </a>
           <br>
