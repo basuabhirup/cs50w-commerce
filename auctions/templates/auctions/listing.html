@@ -27,27 +27,29 @@
   {% endif %}
 
 
-  {% if request.user.is_authenticated and listing.active %}
-    <form method="POST">
-      {% csrf_token %}
-      <label for="bid">Place your bid:</label>
-      <input type="number" id="bid" name="bid" min="{{ listing.starting_bid }}" step="0.01" required>
-      <button type="submit">Place Bid</button>
-    </form>
+  {% if request.user.is_authenticated %}
+    {% if listing.active %}
+        <form method="POST">
+        {% csrf_token %}
+        <label for="bid">Place your bid:</label>
+        <input type="number" id="bid" name="bid" min="{{ listing.starting_bid }}" step="0.01" required>
+        <button type="submit">Place Bid</button>
+        </form>
+    {% endif %}
 
     {% if is_on_watchlist %}
       <form method="POST">
         {% csrf_token %}
         <button type="submit" name="remove_from_watchlist">Remove from Watchlist</button>
       </form>
-    {% else %}
+    {% elif listing.active %}
       <form method="POST">
         {% csrf_token %}
         <button type="submit" name="add_to_watchlist">Add to Watchlist</button>
       </form>
     {% endif %}
 
-    {% if listing.creator == request.user %}
+    {% if listing.creator == request.user and listing.active %}
         <form method="POST">
         {% csrf_token %}
         <button type="submit" name="close_auction">Close Auction</button>

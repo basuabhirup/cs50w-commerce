@@ -95,7 +95,7 @@ def listing(request, listing_id):
         if 'add_to_watchlist' in request.POST:
             listing.watchers.add(request.user)
             listing.save()
-            return redirect('listing', listing_id=listing.id)
+            return redirect('watchlist')
         elif 'remove_from_watchlist' in request.POST:
             listing.watchers.remove(request.user)
             listing.save()
@@ -153,3 +153,15 @@ def listing(request, listing_id):
         'is_on_watchlist': is_on_watchlist,
         'comments': comments,
     })
+    
+
+@login_required
+def watchlist(request):
+    if request.user.is_authenticated:
+        user = request.user
+        watchlist_items = user.watchlist.all()
+        return render(request, "auctions/watchlist.html", {
+            "watchlist_items": watchlist_items,
+        })
+    else:
+        return redirect("login")
