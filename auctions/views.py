@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django import forms
 from .models import User, Listing, Bid
@@ -90,10 +90,18 @@ def listing(request, listing_id):
     print(listing_id)
     listing = get_object_or_404(Listing, pk=listing_id)
     current_bid = listing.bids.order_by('-amount').first()
-    is_on_watchlist = False #request.user.is_authenticated and listing.watchers.filter(user=request.user).exists()
+    is_on_watchlist = request.user.is_authenticated and listing.watchers.filter(username=request.user).exists()
     comments = [] #listing.comments.all().order_by('-created_at')
 
-    # ... rest of the view logic (bidding, closing, etc.)
+    if request.method == 'POST' and request.user.is_authenticated:
+        if 'add_to_watchlist' in request.POST:
+            listing.watchers.add(request.user)
+            listing.save()
+            return redirect('listing', listing_id=listing.id)
+        if 'remove_from_watchlist' in request.POST:
+            listing.watchers.remove(request.user)
+            listing.save()
+            return redirect('listing', listing_id=listing.id)
 
     return render(request, 'auctions/listing.html', {
         'listing': listing,
