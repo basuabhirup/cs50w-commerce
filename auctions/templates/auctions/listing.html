@@ -1,24 +1,33 @@
 {% extends "auctions/layout.html" %}
 
 {% block title %}
-  {{ listing.title }}
+    {{ listing.title }}
 {% endblock %}
 
 
 {% block body %}
   <h1>{{ listing.title }}</h1>
+
   {% if listing.image_url %}
     <img src="{{ listing.image_url }}" alt="{{ listing.title }}" height="268">
   {% endif %}
+
   <p>{{ listing.description }}</p>
   <p>Starting bid: ${{ listing.starting_bid }}</p>
   <p>Current price: ${{ listing.current_price }}</p>
+
+  {% if error_message %}
+    <p style="color: red;">
+        {{ error_message }}
+    </p>
+  {% endif %}
+
 
   {% if request.user.is_authenticated %}
     <form method="POST">
       {% csrf_token %}
       <label for="bid">Place your bid:</label>
-      <input type="number" id="bid" name="bid" min="{{ listing.starting_bid }}" step="0.01" required>
+      <input type="number" id="bid" name="bid" min="{{ listing.current_price }}" step="0.01" required>
       <button type="submit">Place Bid</button>
     </form>
 
