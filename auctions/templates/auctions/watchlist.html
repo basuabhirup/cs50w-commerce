@@ -8,18 +8,26 @@
 <h1>My Watchlist</h1>
 
 {% if watchlist_items %}
-    <ul>
+    <ul class="row flex-wrap text-center p-5 justify-content-start">
         {% for listing in watchlist_items %}
-            <li>
-                <a href="{% url 'listing' listing.id %}">
+        <li class="card col-12 col-sm-6 col-lg-4 col-xl-3 m-3 py-3 listing-card">
+            <a href="{% url 'listing' listing.id %}" class="text-decoration-none text-dark p-0 overflow-hidden">
+            {% if listing.image_url %}
+                <img src="{{ listing.image_url }}" alt="{{ listing.title }}" width="300" height="300" class="mt-0 overflow-hidden">
+            {% else %}
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/495px-No-Image-Placeholder.svg.png" alt="{{ listing.title }}" width="300" height="300">
+            {% endif %}
+            <br>
+            <p class="mt-2 text-small text-dark fw-light">
+                Bidding starts from <span class="fw-normal">${{ listing.starting_bid }}</span>
+            </p>
+            <br>
+            <h5 class="h5">
                 {{ listing.title }}
-                </a>
-                <br>
-                Starting Bid: ${{ listing.starting_bid }}
-                {% if listing.image_url %}
-                <img src="{{ listing.image_url }}" alt="{{ listing.title }}" width="100">
-                {% endif %}
-            </li>
+            </h5>
+            <p class="text-small text-truncate fw-light">{{ listing.description }}</p>
+            </a>
+        </li>
         {% endfor %}
     </ul>
 {% else %}
