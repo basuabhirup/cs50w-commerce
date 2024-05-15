@@ -6,9 +6,9 @@
 
 
 {% block body %}
-  <h1>{{ listing.title }}</h1>
+  <h1 class="h1">{{ listing.title }}</h1>
 
-  {% if listing.image_url %}
+  <!-- {% if listing.image_url %}
     <img src="{{ listing.image_url }}" alt="{{ listing.title }}" height="268">
   {% endif %}
 
@@ -83,7 +83,96 @@
         </ul>
     {% else %}
         <p>No comments yet.</p>
-    {% endif %}
+    {% endif %} -->
+
+    <div class="d-flex">
+      <div class="flex-shrink-0 text-center mt-5">
+
+        {% if listing.image_url %}
+          <img src="{{ listing.image_url }}" alt="{{ listing.title }}" width="300">
+        {% else %}
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/495px-No-Image-Placeholder.svg.png" alt="{{ listing.title }}" width="300">
+        {% endif %}
+        {% if listing.active and listing.current_price > 0 %}
+          <p class="card-text mt-4">Current price: <span class="fw-bold">${{ listing.current_price }}</span></p>
+        {% elif listing.winner %}
+          <p class="card-text mt-4">Closed price: <span class="fw-bold">${{ listing.current_price }}</span></p>
+        {% endif %}
+        <p class="card-text mt-4 fw-light text-small">Starting bid: <span class="fw-normal">${{ listing.starting_bid }}</span></p>
+  
+        {% if request.user.is_authenticated %}
+          {% if is_on_watchlist %}
+            <form method="POST">
+              {% csrf_token %}
+              <button class="btn btn-secondary" type="submit" name="remove_from_watchlist">Remove from Watchlist</button>
+            </form>
+          {% elif listing.active %}
+            <form method="POST">
+              {% csrf_token %}
+              <button class="btn btn-secondary" type="submit" name="add_to_watchlist">Add to Watchlist</button>
+            </form>
+          {% endif %}
+
+          {% if listing.creator == request.user and listing.active %}
+              <form method="POST">
+              {% csrf_token %}
+              <button class="btn btn-danger mt-3" type="submit" name="close_auction">Close Auction</button>
+              </form>
+          {% endif %}
+        {% endif %}
+        <br>
+        {% if not listing.active and listing.winner %}
+          <p class="card-text">Auction Closed! Winner: {{ listing.winner.username }}</p>
+        {% elif not listing.active %}
+          <p class="card-text">Auction Closed. No winner.</p>
+        {% endif %}
+      </div>
+      <div class="flex-grow-1 ms-3 p-5">
+          <div class="card-body">
+            <p class="card-text w-75">{{ listing.description }}</p>
+            <br>
+            <br>
+
+            {% if error_message %}
+              <p class="text-danger">
+                  {{ error_message }}
+              </p>
+            {% endif %}
+
+            {% if request.user.is_authenticated and listing.active %}
+              <form method="POST" class="my-3">
+                {% csrf_token %}
+                <input class="form-control w-25 d-inline me-2" type="number" id="bid" name="bid" min="{{ listing.starting_bid }}" step="1.00" placeholder="Enter Bid Amount" required>
+                <button class="btn btn-primary ms-2" type="submit">Place Bid</button>
+              </form>
+            {% endif %}
+            <br>
+
+            {% if request.user.is_authenticated %}
+              <form method="POST" class="my-3">
+                {% csrf_token %}
+                <textarea class="form-control w-75" id="comment" name="comment" rows="4" placeholder="Add your comment" required></textarea>
+                <button class="btn btn-dark mt-3 ms-auto me-5 mb-5" type="submit">Post Comment</button>
+              </form>
+            {% endif %}
+            <h3 class="h3">Comments</h3>
+            {% if comments %}
+              {% for comment in comments %}
+                <div class="card my-1 w-75">                     
+                  <p class="card-body card-text p-3 h-50 mb-3">{{ comment.content }}</p>
+                  <p class="text-end text-small me-3">
+                    by <strong>{{ comment.user.username }}</strong> 
+                    <span class="fw-light">({{ comment.created_at|timesince }} ago)</span>
+                  </p>
+                </div>
+              {% endfor %}
+            {% else %}
+                <p>No comments yet.</p>
+            {% endif %}
+        </div>
+      </div>
+    </div>
+    
 
 {% endblock %}
 
