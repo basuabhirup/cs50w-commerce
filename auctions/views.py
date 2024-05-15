@@ -99,7 +99,7 @@ def listing(request, listing_id):
         elif 'remove_from_watchlist' in request.POST:
             listing.watchers.remove(request.user)
             listing.save()
-            return redirect('listing', listing_id=listing.id)
+            return redirect('watchlist')
         
         if 'bid' in request.POST:
             new_bid = float(request.POST['bid'])
@@ -165,3 +165,24 @@ def watchlist(request):
         })
     else:
         return redirect("login")
+    
+
+@login_required
+def all_categories(request):
+    categories = []
+    category_values = Listing.objects.filter(active=True).values('category')
+    for value in category_values:
+        for category in value['category'].split(','):
+            categories.append(category.strip())
+    return render(request, "auctions/categories.html", {
+        "categories": categories,
+    })
+
+
+@login_required
+def category_listings(request, category):
+  active_listings = Listing.objects.filter(active=True, category__icontains=category)
+  return render(request, "auctions/category_listings.html", {
+    "category": category,
+    "active_listings": active_listings,
+  })
