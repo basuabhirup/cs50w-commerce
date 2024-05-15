@@ -13,6 +13,13 @@ class CreateListingForm(forms.ModelForm):
         model = Listing
         fields = ["title", "description", "starting_bid", "image_url", "category"]
         
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['title'].widget.attrs.update({'class': 'form-control w-50'})
+        self.fields['description'].widget.attrs.update({'class': 'form-control w-50'}) 
+        self.fields['starting_bid'].widget.attrs.update({'class': 'form-control w-50'}) 
+        self.fields['image_url'].widget.attrs.update({'class': 'form-control w-50'}) 
+        self.fields['category'].widget.attrs.update({'class': 'form-control w-50'}) 
 
 def index(request):    
     active_listings = Listing.objects.filter(active=True)
@@ -173,7 +180,8 @@ def all_categories(request):
     category_values = Listing.objects.filter(active=True).values('category')
     for value in category_values:
         for category in value['category'].split(','):
-            categories.append(category.strip())
+            if(len(category.strip()) > 0 and category.strip() not in categories):
+                categories.append(category.strip())
     return render(request, "auctions/categories.html", {
         "categories": categories,
     })
